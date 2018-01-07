@@ -6,4 +6,3 @@
 
 Eliminates need for scp/ftp between CAEN/local machine
 
-tmp
