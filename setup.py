@@ -36,10 +36,15 @@ def create_bash_profile():
 
 
 def automate():
+	# setup git repository
+	os.system('git init')
+	os.system('git remote add origin https://www.github.com/' + args.user + '/' + args.name + '.git')
+	global token
+	os.system('git pull https://' + token + '@github.com/' + args.user + '/' + args.name + '.git')
 	# update .bash_profile appropriately
-	with open("~/.bash_profile")
 	# git --work-tree=/GIT_DIR --git-dir=/GIT_DIR/.git pull origin master
-
+	with open("~/.bash_profile", "a") as f:
+		f.write('git --work-tree=' + os.getcwd() + ' --git-dir=' + os.getcwd() + '/.git pull origin master')
 	return
 
 
