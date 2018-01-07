@@ -44,7 +44,10 @@ def automate():
 	# update .bash_profile appropriately
 	# git --work-tree=/GIT_DIR --git-dir=/GIT_DIR/.git pull origin master
 	with open(file, "a") as f:
-		f.write('git --work-tree=' + os.getcwd() + ' --git-dir=' + os.getcwd() + '/.git pull https://' + token + '@github.com/' + args.user + '/' + args.name + '.git master\n')
+		if args.secure_shell is True:
+			f.write('git --work-tree=' + os.getcwd() + ' --git-dir=' + os.getcwd() + '/.git pull git@github.com:' + args.user + '/' + args.name + '.git master\n')
+		else:
+			f.write('git --work-tree=' + os.getcwd() + ' --git-dir=' + os.getcwd() + '/.git pull https://' + token + '@github.com/' + args.user + '/' + args.name + '.git master\n')
 	return
 
 
@@ -93,6 +96,7 @@ def handle_args():
 	parser.add_argument('-u', '--user', required=True,
 						help='github username')
 	parser.add_argument('--ssh', required=False,
+						dest="secure_shell",
 						action='store_true',
 						help='include arg if ssh access configured')
 	parser.add_argument('--2fa', required=False,
