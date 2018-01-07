@@ -27,7 +27,7 @@ def create_bash_profile():
 					exists = True
 					break
 			if not exists:
-				f.write('module load gcc/6.2.0')
+				f.write('module load gcc/6.2.0\n')
 	else:
 		f = open(os.path.abspath(file), "w+")
 		f.write('module load gcc/6.2.0\n')
@@ -44,7 +44,7 @@ def automate():
 	# update .bash_profile appropriately
 	# git --work-tree=/GIT_DIR --git-dir=/GIT_DIR/.git pull origin master
 	with open(file, "a") as f:
-		f.write('git --work-tree=' + os.getcwd() + ' --git-dir=' + os.getcwd() + '/.git pull origin master')
+		f.write('git --work-tree=' + os.getcwd() + ' --git-dir=' + os.getcwd() + '/.git pull https://' + token + '@github.com/' + args.user + '/' + args.name + '.git master\n')
 	return
 
 
