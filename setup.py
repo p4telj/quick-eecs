@@ -35,6 +35,9 @@ def create_bash_profile():
 	return
 
 
+# NOTE: https version is ~somewhat~ insecure as hashed key is put into .bash_profile.
+# Considerations: CAEN is secure, and hashed key is VERY limited. can only modify repositories, not even delete them.
+# So, not too bad. But, will work on replacing in the future.
 def automate():
 	# setup git repository
 	os.system('git init')
@@ -62,10 +65,12 @@ def create_repo():
 	os.chdir(os.getcwd() + '/' + args.name)
 
 	# If 2FA, uses pre-existing OAuth token. Otherwise, creates new OAuth token
+	proj_data = '{"name": "'+args.name+'", "description": "'+args.desc+'", "private": true, "auto_init": true}'
 	global token
 	if args.secure:
 		print('Please provide an access token with repository persmissions. \nSettings / Developer Settings / Personal Access Tokens')
 		token = getpass.getpass(prompt="Access Token: ")
+		response = requests.post('https://api.github.com/user/repos', data=data, auth=(args.user,token))
 	else:
 		pwd = getpass.getpass(prompt="Password: ")
 		data = '{"note": "CAEN access.", "scopes": "repo"}'
@@ -75,10 +80,9 @@ def create_repo():
 			if k[u'note'] == u'CAEN access.':
 				token = k[u'hashed_token']
 				break
+		response = requests.post('https://api.github.com/user/repos', data=data, auth=(args.user,pwd))
 
-	# Creates project repository
-	data = '{"name": "'+args.name+'", "description": "'+args.desc+'", "private": true, "auto_init": true}'
-	response = requests.post('https://api.github.com/user/repos', data=data, auth=(args.user,token))
+	# project repository creation feedback
 	print(response.json().get(u'message', "Repository creation successful."))
 	return
 
