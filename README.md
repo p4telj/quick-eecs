@@ -5,3 +5,5 @@
 (3) Updates .bash_rc and .bash_profile to call scripts
 
 Eliminates need for scp/ftp between CAEN/local machine
+
+tmp
