@@ -62,7 +62,6 @@ def create_repo():
 	global token
 	if args.secure:
 		print('Please provide an access token with repository persmissions. \nSettings / Developer Settings / Personal Access Tokens')
-
 		token = getpass.getpass(prompt="Access Token: ")
 	else:
 		pwd = getpass.getpass(prompt="Password: ")
@@ -76,7 +75,7 @@ def create_repo():
 
 	# Creates project repository
 	data = '{"name": "'+args.name+'", "description": "'+args.desc+'", "private": true, "auto_init": true}'
-	response = requests.post('https://api.github.com/user/repos', data=data, auth=(args.user,pwd))
+	response = requests.post('https://api.github.com/user/repos', data=data, auth=(args.user,token))
 	print(response.json().get(u'message', "Repository creation successful."))
 	return
 
