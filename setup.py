@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Jimil Patel
 # <pateljim@umich.edu>
@@ -13,25 +13,25 @@ import sys
 
 
 token = ''
-file = "~/.bash_profile"
+file = os.path.expanduser("~") + "/.bash_profile"
 
 
 def create_bash_profile():
 	# .bash_profile is loaded on remote ssh
 	# creates if doesn't exist. also adds module load gcc/6.2.0 for eecs281
-	if os.path.isfile(Path(file)):
-		with open(file, "ra") as f:
+	if os.path.isfile(file):
+		with open(file, "r+") as f:
 			exists = False
-			while True:
-				line = f.readline()
-				if line == 'module load gcc/6.2.0' or line == 'module load gcc/6.2.0 ':
-				exists = True
-				break
+			for line in iter(f.readline()):
+				if line == 'module load gcc/6.2.0' or line == 'module load gcc/6.2.0 ' or line == 'module load gcc/6.2.0\n':
+					exists = True
+					break
 			if not exists:
 				f.write('module load gcc/6.2.0')
 	else:
-		with open(file, "w") as f:
-			f.write('module load gcc/6.2.0')
+		f = open(os.path.abspath(file), "w+")
+		f.write('module load gcc/6.2.0\n')
+		f.close()
 	return
 
 
@@ -40,10 +40,10 @@ def automate():
 	os.system('git init')
 	os.system('git remote add origin https://www.github.com/' + args.user + '/' + args.name + '.git')
 	global token
-	os.system('git pull https://' + token + '@github.com/' + args.user + '/' + args.name + '.git')
+	os.system('git pull https://' + token + '@github.com/' + args.user + '/' + args.name + '.git master')
 	# update .bash_profile appropriately
 	# git --work-tree=/GIT_DIR --git-dir=/GIT_DIR/.git pull origin master
-	with open("~/.bash_profile", "a") as f:
+	with open(file, "a") as f:
 		f.write('git --work-tree=' + os.getcwd() + ' --git-dir=' + os.getcwd() + '/.git pull origin master')
 	return
 
@@ -51,31 +51,31 @@ def automate():
 def create_repo():
 	# change directory, create repository
 	os.chdir(args.dir)
-	# try:
-	# 	os.mkdir(args.name)
-	# except OSError:
-	# 	print('repository directory already exists.')
-	# 	sys.exit(0)
+	try:
+		os.mkdir(args.name)
+	except OSError:
+		print('repository directory already exists.')
+		sys.exit(0)
 	os.chdir(os.getcwd() + '/' + args.name)
 
 	# If 2FA, uses pre-existing OAuth token. Otherwise, creates new OAuth token
+	global token
 	if args.secure:
-		print('Please provide an access token with full repository persmissions. \nSettings / Developer Settings / Personal Access Tokens')
-		global token
+		print('Please provide an access token with repository persmissions. \nSettings / Developer Settings / Personal Access Tokens')
+
 		token = getpass.getpass(prompt="Access Token: ")
 	else:
 		pwd = getpass.getpass(prompt="Password: ")
-		data = '{"scope": "repo,admin::org,admin::public_key,user,delete_repo", "note": "CAEN access."}'
+		data = '{"note": "CAEN access.", "scopes": "repo"}'
 		requests.post('https://api.github.com/authorizations', data=data, auth=(args.user,pwd))
 		response = requests.get('https://api.github.com/authorizations', auth=(args.user, pwd))
 		for k in response.json():
 			if k[u'note'] == u'CAEN access.':
-				global token
 				token = k[u'hashed_token']
 				break
 
 	# Creates project repository
-	data = '{"name": "'+args.name+'", "description": "'+args.desc+'", "private": false}'
+	data = '{"name": "'+args.name+'", "description": "'+args.desc+'", "private": true, "auto_init": true}'
 	response = requests.post('https://api.github.com/user/repos', data=data, auth=(args.user,pwd))
 	print(response.json().get(u'message', "Repository creation successful."))
 	return
@@ -106,3 +106,5 @@ def handle_args():
 if __name__ == "__main__":
 	args = handle_args()
 	create_repo()
+	create_bash_profile()
+	automate()
