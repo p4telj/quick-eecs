@@ -1,10 +1,47 @@
 #!/usr/bin/env python3
 
+# Jimil Patel
+# <pateljim@umich.edu>
+# https://www.github.com/p4telj/
+# setup.py
+
 import argparse
 import requests
 import getpass
 import os
 import sys
+
+
+token = ''
+file = "~/.bash_profile"
+
+
+def create_bash_profile():
+	# .bash_profile is loaded on remote ssh
+	# creates if doesn't exist. also adds module load gcc/6.2.0 for eecs281
+	if os.path.isfile(Path(file)):
+		with open(file, "ra") as f:
+			exists = False
+			while True:
+				line = f.readline()
+				if line == 'module load gcc/6.2.0' or line == 'module load gcc/6.2.0 ':
+				exists = True
+				break
+			if not exists:
+				f.write('module load gcc/6.2.0')
+	else:
+		with open(file, "w") as f:
+			f.write('module load gcc/6.2.0')
+	return
+
+
+def automate():
+	# update .bash_profile appropriately
+	with open("~/.bash_profile")
+	# git --work-tree=/GIT_DIR --git-dir=/GIT_DIR/.git pull origin master
+
+	return
+
 
 def create_repo():
 	# change directory, create repository
@@ -19,6 +56,7 @@ def create_repo():
 	# If 2FA, uses pre-existing OAuth token. Otherwise, creates new OAuth token
 	if args.secure:
 		print('Please provide an access token with full repository persmissions. \nSettings / Developer Settings / Personal Access Tokens')
+		global token
 		token = getpass.getpass(prompt="Access Token: ")
 	else:
 		pwd = getpass.getpass(prompt="Password: ")
@@ -27,24 +65,14 @@ def create_repo():
 		response = requests.get('https://api.github.com/authorizations', auth=(args.user, pwd))
 		for k in response.json():
 			if k[u'note'] == u'CAEN access.':
+				global token
 				token = k[u'hashed_token']
 				break
-	
-	#
 
-		data = '{"name": "'+args.name+'", "description": "'+args.desc+'", "private": false}'
-		#response = requests.post('https://api.github.com/user/repos', data=data, auth=(args.user,pwd))
-		#print(response.json().get(u'message', "Repository creation successful."))
-
-
-
-
-
-
-
-
-
-
+	# Creates project repository
+	data = '{"name": "'+args.name+'", "description": "'+args.desc+'", "private": false}'
+	response = requests.post('https://api.github.com/user/repos', data=data, auth=(args.user,pwd))
+	print(response.json().get(u'message', "Repository creation successful."))
 	return
 
 
